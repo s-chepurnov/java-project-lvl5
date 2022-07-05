@@ -76,7 +76,6 @@ dependencies {
 	)
 }
 compileJava {
-	options.release = 17
 	options.encoding = 'UTF-8'
 }
 
