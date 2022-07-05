@@ -78,6 +78,7 @@ compileJava {
 	options.release = 16
 	options.encoding = 'UTF-8'
 }
+java.toolchain.languageVersion = JavaLanguageVersion.of(16)
 
 test {
 	useJUnitPlatform()
