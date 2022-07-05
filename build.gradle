@@ -75,7 +75,7 @@ dependencies {
 	)
 }
 compileJava {
-	options.release = 17
+	options.release = 17 as Property<Integer>
 	options.encoding = 'UTF-8'
 }
 
