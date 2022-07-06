@@ -9,12 +9,12 @@ springdoc:
 spring:
   security:
     user:
-      name: "admin"
-      password: "admin123"
+      name: ""
+      password: ""
   datasource:
     username: ""
     password: ""
-    url: "jdbc:h2:./hexletBlog"
+    url: "jdbc:h2:./taskManager"
 
   jpa:
     show-sql: true
@@ -35,4 +35,4 @@ logging:
     web: DEBUG
     # org.hibernate.type.descriptor.sql: TRACE
     # org.springframework.security: TRACE
-    # io.hexlet.typoreporter: DEBUG
+    # hexlet.code.typoreporter: DEBUG

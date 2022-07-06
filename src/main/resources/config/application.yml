@@ -14,8 +14,8 @@ spring:
   mvc:
     hiddenmethod:
       filter:
-        enabled: true
+        enabled: drop-create
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
