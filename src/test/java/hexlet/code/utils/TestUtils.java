@@ -4,13 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.component.JWTHelper;
-import hexlet.code.domain.User;
 import hexlet.code.dto.UserDto;
-
-//import hexlet.code.repository.LabelRepository;
-//import hexlet.code.repository.TaskRepository;
-//import hexlet.code.repository.TaskStatusRepository;
-
+import hexlet.code.model.User;
+import hexlet.code.repository.LabelRepository;
+import hexlet.code.repository.TaskRepository;
+import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +36,6 @@ public class TestUtils {
             "pwd"
     );
 
-    /**
-     * getTestRegistrationDto.
-     * @return UserDto
-     */
     public UserDto getTestRegistrationDto() {
         return testRegistrationDto;
     }
@@ -55,73 +49,42 @@ public class TestUtils {
     @Autowired
     private JWTHelper jwtHelper;
 
-//    @Autowired
-//    private TaskStatusRepository taskStatusRepository;
-//
-//    @Autowired
-//    private TaskRepository taskRepository;
-//
-//    @Autowired
-//    private LabelRepository labelRepository;
+    @Autowired
+    private TaskStatusRepository taskStatusRepository;
 
-    /**
-     * tearDown.
-     */
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
+    private LabelRepository labelRepository;
+
     public void tearDown() {
-//        taskRepository.deleteAll();
-//        labelRepository.deleteAll();
-//        taskStatusRepository.deleteAll();
+        taskRepository.deleteAll();
+        labelRepository.deleteAll();
+        taskStatusRepository.deleteAll();
         userRepository.deleteAll();
     }
 
-    /**
-     * getUserByEmail.
-     * @param email
-     * @return User
-     */
     public User getUserByEmail(final String email) {
         return userRepository.findByEmail(email).get();
     }
 
-    /**
-     * regDefaultUser.
-     * @return ResultActions
-     * @throws Exception
-     */
     public ResultActions regDefaultUser() throws Exception {
         return regUser(testRegistrationDto);
     }
 
-
-    /**
-     * regUser.
-     * @param dto
-     * @return ResultActions
-     * @throws Exception
-     */
     public ResultActions regUser(final UserDto dto) throws Exception {
         final var request = post(USER_CONTROLLER_PATH)
                 .content(asJson(dto))
                 .contentType(APPLICATION_JSON);
+
         return perform(request);
     }
 
-    /**
-     * buildToken.
-     * @param userId
-     * @return String
-     */
     public String buildToken(Object userId) {
         return jwtHelper.expiring(Map.of(SPRING_SECURITY_FORM_USERNAME_KEY, userId));
     }
 
-    /**
-     * perform.
-     * @param request
-     * @param byUser
-     * @return ResultActions
-     * @throws Exception
-     */
     public ResultActions perform(final MockHttpServletRequestBuilder request, final String byUser) throws Exception {
         final Long userId = userRepository.findByEmail(byUser)
                 .map(User::getId)
@@ -131,25 +94,12 @@ public class TestUtils {
         return performWithToken(request, token);
     }
 
-    /**
-     * performWithToken.
-     * @param request
-     * @param token
-     * @return ResultActions
-     * @throws Exception
-     */
     public ResultActions performWithToken(final MockHttpServletRequestBuilder request,
                                           final String token) throws Exception {
         request.header(AUTHORIZATION, token);
         return perform(request);
     }
 
-    /**
-     * perform.
-     * @param request
-     * @return ResultActions
-     * @throws Exception
-     */
     public ResultActions perform(final MockHttpServletRequestBuilder request) throws Exception {
         return mockMvc.perform(request);
     }

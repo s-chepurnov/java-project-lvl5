@@ -16,17 +16,17 @@ import static hexlet.code.config.security.SecurityConfig.DEFAULT_AUTHORITIES;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.SPRING_SECURITY_FORM_USERNAME_KEY;
 
-public final class JWTAuthorizationFilter extends OncePerRequestFilter {
+public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
     private static final String BEARER = "Bearer";
 
     private final RequestMatcher publicUrls;
     private final JWTHelper jwtHelper;
 
-    public JWTAuthorizationFilter(final RequestMatcher publicUrls1,
-                                  final JWTHelper jwtHelper1) {
-        this.publicUrls = publicUrls1;
-        this.jwtHelper = jwtHelper1;
+    public JWTAuthorizationFilter(final RequestMatcher publicUrls,
+                                  final JWTHelper jwtHelper) {
+        this.publicUrls = publicUrls;
+        this.jwtHelper = jwtHelper;
     }
 
     @Override

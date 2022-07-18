@@ -22,11 +22,15 @@ CRUD Пользователей
 
 
 ## locally
+
 make generate-migrations
+
 make start
+
 http://localhost:5000/h2console/
 
 ## heroku
+
 git push heroku main
 
 

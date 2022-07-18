@@ -1,9 +1,10 @@
 package hexlet.code.controller;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.config.SpringConfigForIT;
 import hexlet.code.dto.LoginDto;
 import hexlet.code.dto.UserDto;
-import hexlet.code.domain.User;
+import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.utils.TestUtils;
 import java.util.List;
@@ -42,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(TEST_PROFILE)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringConfigForIT.class)
-public final class UserControllerIT {
+public class UserControllerIT {
 
     @Autowired
     private UserRepository userRepository;

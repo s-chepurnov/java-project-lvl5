@@ -13,7 +13,7 @@ import static io.jsonwebtoken.SignatureAlgorithm.HS256;
 import static io.jsonwebtoken.impl.TextCodec.BASE64;
 
 @Component
-public final class JWTHelper {
+public class JWTHelper {
 
     private final String secretKey;
     private final String issuer;
@@ -21,14 +21,14 @@ public final class JWTHelper {
     private final Long clockSkewSec;
     private final Clock clock;
 
-    public JWTHelper(@Value("${jwt.issuer:spring_blog}") final String issuer1,
-                     @Value("${jwt.expiration-sec:86400}") final Long expirationSec1,
-                     @Value("${jwt.clock-skew-sec:300}") final Long clockSkewSec1,
-                     @Value("${jwt.secret:secret}") final String secret1) {
-        this.secretKey = BASE64.encode(secret1);
-        this.issuer = issuer1;
-        this.expirationSec = expirationSec1;
-        this.clockSkewSec = clockSkewSec1;
+    public JWTHelper(@Value("${jwt.issuer:spring_blog}") final String issuer,
+                     @Value("${jwt.expiration-sec:86400}") final Long expirationSec,
+                     @Value("${jwt.clock-skew-sec:300}") final Long clockSkewSec,
+                     @Value("${jwt.secret:secret}") final String secret) {
+        this.secretKey = BASE64.encode(secret);
+        this.issuer = issuer;
+        this.expirationSec = expirationSec;
+        this.clockSkewSec = clockSkewSec;
         this.clock = DefaultClock.INSTANCE;
     }
 
@@ -50,13 +50,12 @@ public final class JWTHelper {
     }
 
     private Claims getClaims(final Map<String, Object> attributes, final Long expiresInSec) {
-        final int thousand = 1000;
         final Claims claims = Jwts.claims();
         claims.setIssuer(issuer);
         claims.setIssuedAt(clock.now());
         claims.putAll(attributes);
         if (expiresInSec > 0) {
-            claims.setExpiration(new Date(System.currentTimeMillis() + expiresInSec * thousand));
+            claims.setExpiration(new Date(System.currentTimeMillis() + expiresInSec * 1000));
         }
         return claims;
     }

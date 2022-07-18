@@ -1,5 +1,7 @@
 package hexlet.code.config;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
@@ -7,25 +9,15 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.PathResourceResolver;
 
-import java.io.IOException;
-
-/**
- * WebConfiguration defines callback methods to customize the Java-based configuration
- * for Spring MVC enabled via @EnableWebMvc.
- */
 @Configuration
 public class WebConfiguration implements WebMvcConfigurer {
 
     private final String baseApiPath;
 
-    public WebConfiguration(@Value("${base-url}") String baseApiPathStr) {
-        this.baseApiPath = baseApiPathStr;
+    public WebConfiguration(@Value("/api") String baseApiPath) {
+        this.baseApiPath = baseApiPath;
     }
 
-    /**
-     * register resource handlers.
-     * @param registry
-     */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry

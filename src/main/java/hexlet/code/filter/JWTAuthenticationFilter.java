@@ -18,18 +18,20 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-public final class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+
+    private static final ObjectMapper MAPPER = new ObjectMapper().configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     private final JWTHelper jwtHelper;
 
-    public JWTAuthenticationFilter(final AuthenticationManager authenticationManager1,
-                                   final RequestMatcher loginRequest1,
-                                   final JWTHelper jwtHelper1) {
-        super(authenticationManager1);
-        super.setRequiresAuthenticationRequestMatcher(loginRequest1);
-        this.jwtHelper = jwtHelper1;
+    public JWTAuthenticationFilter(final AuthenticationManager authenticationManager,
+                                   final RequestMatcher loginRequest,
+                                   final JWTHelper jwtHelper) {
+        super(authenticationManager);
+        super.setRequiresAuthenticationRequestMatcher(loginRequest);
+        this.jwtHelper = jwtHelper;
     }
 
     @Override
@@ -37,7 +39,7 @@ public final class JWTAuthenticationFilter extends UsernamePasswordAuthenticatio
                                                 final HttpServletResponse response) throws AuthenticationException {
         final LoginDto loginData = getLoginData(request);
         final var authRequest = new UsernamePasswordAuthenticationToken(
-                loginData.getUsername(),
+                loginData.getEmail(),
                 loginData.getPassword()
         );
         setDetails(request, authRequest);
@@ -63,6 +65,6 @@ public final class JWTAuthenticationFilter extends UsernamePasswordAuthenticatio
         final UserDetails user = (UserDetails) authResult.getPrincipal();
         final String token = jwtHelper.expiring(Map.of(SPRING_SECURITY_FORM_USERNAME_KEY, user.getUsername()));
 
-        response.getWriter().println(token);
+        response.getWriter().print(token);
     }
 }

@@ -1,7 +1,7 @@
 package hexlet.code.service;
 
-import hexlet.code.domain.User;
 import hexlet.code.dto.UserDto;
+import hexlet.code.model.User;
 
 public interface UserService {
 
@@ -9,7 +9,7 @@ public interface UserService {
 
     User updateUser(long id, UserDto userDto);
 
-    String getCurrentUserName();
+    Long getCurrentUserId();
 
     User getCurrentUser();
 }

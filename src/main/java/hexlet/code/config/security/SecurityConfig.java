@@ -3,7 +3,6 @@ package hexlet.code.config.security;
 import hexlet.code.component.JWTHelper;
 import hexlet.code.filter.JWTAuthenticationFilter;
 import hexlet.code.filter.JWTAuthorizationFilter;
-
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +31,8 @@ import static org.springframework.http.HttpMethod.POST;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     public static final String LOGIN = "/login";
-    public static final List<GrantedAuthority> DEFAULT_AUTHORITIES = List.of(new SimpleGrantedAuthority("USER"));
+
+    public static final List<GrantedAuthority>  DEFAULT_AUTHORITIES = List.of(new SimpleGrantedAuthority("USER"));
 
     //Note: Сейчас разрешены:
     // - GET('/api/users')
@@ -46,8 +46,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final JWTHelper jwtHelper;
 
     public SecurityConfig(@Value("${base-url}") final String baseUrl,
-                          final UserDetailsService userDetailsService1,
-                          final PasswordEncoder passwordEncoder1, final JWTHelper jwtHelper1) {
+                          final UserDetailsService userDetailsService,
+                          final PasswordEncoder passwordEncoder, final JWTHelper jwtHelper) {
         this.loginRequest = new AntPathRequestMatcher(baseUrl + LOGIN, POST.toString());
         this.publicUrls = new OrRequestMatcher(
                 loginRequest,
@@ -55,27 +55,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 new AntPathRequestMatcher(baseUrl + USER_CONTROLLER_PATH, GET.toString()),
                 new NegatedRequestMatcher(new AntPathRequestMatcher(baseUrl + "/**"))
         );
-        this.userDetailsService = userDetailsService1;
-        this.passwordEncoder = passwordEncoder1;
-        this.jwtHelper = jwtHelper1;
+        this.userDetailsService = userDetailsService;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtHelper = jwtHelper;
     }
 
-    /**
-     * Configure.
-     * @param auth
-     * @throws Exception
-     */
     @Override
     protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder);
     }
 
-    /**
-     * Configure.
-     * @param http
-     * @throws Exception
-     */
     @Override
     public void configure(final HttpSecurity http) throws Exception {
 
@@ -101,7 +91,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .formLogin().disable()
                 .httpBasic().disable()
                 .logout().disable();
-
     }
 
 }
