@@ -7,10 +7,6 @@ springdoc:
     path: /swagger-ui.html
 
 spring:
-  security:
-    user:
-      name: ""
-      password: ""
   datasource:
     username: ""
     password: ""
@@ -35,4 +31,4 @@ logging:
     web: DEBUG
     # org.hibernate.type.descriptor.sql: TRACE
     # org.springframework.security: TRACE
-    # hexlet.code.typoreporter: DEBUG
+    # io.hexlet.typoreporter: DEBUG

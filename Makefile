@@ -5,10 +5,10 @@ clean:
 	./gradlew clean
 
 build:
-	./gradlew clean build
+	ROLLBAR_TOKEN=fakeToken ./gradlew clean build
 
 start:
-	./gradlew bootRun --args='--spring.profiles.active=dev'
+	ROLLBAR_TOKEN=fakeToken ./gradlew bootRun --args='--spring.profiles.active=dev'
 
 start-prod:
 	./gradlew bootRun --args='--spring.profiles.active=prod'
@@ -17,13 +17,13 @@ install:
 	./gradlew installDist
 
 start-dist:
-	./build/install/app/bin/app
+	ROLLBAR_TOKEN=fakeToken ./build/install/app/bin/app
 
 lint:
 	./gradlew checkstyleMain checkstyleTest
 
 test:
-	./gradlew test
+	ROLLBAR_TOKEN=fakeToken ./gradlew test
 
 report:
 	./gradlew jacocoTestReport

@@ -5,7 +5,7 @@ base-url: /api
 
 spring:
   application:
-    name: hexletBlog
+    name: taskManager
 
   liquibase:
     enabled: true
@@ -14,8 +14,4 @@ spring:
   mvc:
     hiddenmethod:
       filter:
-        enabled: drop-create
-
-  jpa:
-    hibernate:
-      ddl-auto: none
+        enabled: true
