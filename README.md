@@ -8,5 +8,7 @@
 Spring Boot, Spring Security, Spring Data JPA, Liquibase, PostgreSQL, H2, Lombok, Open API (Swagger)
 
 ### Run locally
+make start
 
-### App link 
+### App link
+
