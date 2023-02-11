@@ -6,7 +6,7 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/0ea524721f7478c76746/test_coverage)](https://codeclimate.com/github/s-chepurnov/java-project-lvl5/test_coverage)
 
 ### Technologies in use
-Spring Boot, Spring Security, Spring Data JPA, Liquibase, PostgreSQL, H2, Lombok, Open API (Swagger)
+Spring Boot 2, Spring Security, Spring Data JPA, Liquibase, PostgreSQL, H2, Lombok, Open API (Swagger)
 
 ### Run locally
 make start
