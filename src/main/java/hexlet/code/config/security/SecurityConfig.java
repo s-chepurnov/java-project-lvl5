@@ -33,7 +33,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     public static final String LOGIN = "/login";
 
-    public static final List<GrantedAuthority> DEFAULT_AUTHORITIES = List.of(new SimpleGrantedAuthority("USER"));
+    public static final List<GrantedAuthority>  DEFAULT_AUTHORITIES = List.of(new SimpleGrantedAuthority("USER"));
 
     //Note: Сейчас разрешены:
     // - GET('/api/users')

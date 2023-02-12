@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.component.JWTHelper;
 import hexlet.code.dto.UserDto;
-import hexlet.code.domain.User;
+import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;

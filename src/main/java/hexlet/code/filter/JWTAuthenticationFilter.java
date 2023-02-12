@@ -18,10 +18,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper().configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     private final JWTHelper jwtHelper;
 
@@ -38,7 +39,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                                 final HttpServletResponse response) throws AuthenticationException {
         final LoginDto loginData = getLoginData(request);
         final var authRequest = new UsernamePasswordAuthenticationToken(
-                loginData.getUsername(),
+                loginData.getEmail(),
                 loginData.getPassword()
         );
         setDetails(request, authRequest);
@@ -64,6 +65,6 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         final UserDetails user = (UserDetails) authResult.getPrincipal();
         final String token = jwtHelper.expiring(Map.of(SPRING_SECURITY_FORM_USERNAME_KEY, user.getUsername()));
 
-        response.getWriter().println(token);
+        response.getWriter().print(token);
     }
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.config.SpringConfigForIT;
 import hexlet.code.dto.LoginDto;
 import hexlet.code.dto.UserDto;
-import hexlet.code.domain.User;
+import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.utils.TestUtils;
 import java.util.List;
