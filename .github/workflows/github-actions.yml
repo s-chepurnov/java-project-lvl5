@@ -1,32 +1,26 @@
-name: GitHub Actions
+name: Java CI
 
 on:
-  push:
-    branches:
-      - main
+  - push
+
 jobs:
-  build-project:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
+      - uses: actions/checkout@v2
+      - name: Set up openJDK
+        uses: actions/setup-java@v2
         with:
-          distribution: temurin
-          java-version: 17
-
+          distribution: 'temurin'
+          java-version: '17'
       - name: Build with Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: build
-
+        run: make build
       - name: Publish code coverage
         uses: paambaati/codeclimate-action@v3.0.0
-        if: ${{ github.event_name == 'push' }}
         env:
-          # Set CC_TEST_REPORTER_ID as secret of your repo
           CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
-          JACOCO_SOURCE_PATH: ${{github.workspace}}/src/main/java
+          JACOCO_SOURCE_PATH: src/main/java
         with:
-          # The report file must be there, otherwise Code Climate won't find it
           coverageCommand: make report
           coverageLocations: ${{github.workspace}}/build/reports/jacoco/test/jacocoTestReport.xml:jacoco
