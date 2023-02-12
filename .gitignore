@@ -4,3 +4,6 @@
 build
 *.db
 .idea
+/node/
+/frontend/build/
+/frontend/node_modules/
