@@ -20,18 +20,6 @@ import java.sql.Statement;
 public class AppApplication {
 
     public static void main(String[] args) throws SQLException {
-        String jdbcURL = "jdbc:h2:./taskManager";
-        String username = "";
-        String password = "";
-
-        Connection connection = DriverManager.getConnection(jdbcURL, username, password);
-        System.out.println("Connected to H2 in-memory database.");
-        Statement statement = connection.createStatement();
-        statement.execute("DROP ALL OBJECTS");
-        //statement.execute("DROP TABLE USERS");
-        System.out.println("drop");
-        connection.close();
-
         SpringApplication.run(AppApplication.class, args);
     }
 
