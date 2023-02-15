@@ -35,7 +35,7 @@ public class UserController {
     public static final String ID = "/{id}";
 
     private static final String ONLY_OWNER_BY_ID = """
-            @userRepository.findById(#id).get().getEmail() == authentication.getName()
+            @userRepository.findById(#id).get().getId().toString() == authentication.getName()
         """;
 
     private final UserService userService;
@@ -49,9 +49,8 @@ public class UserController {
         return userService.createNewUser(dto);
     }
 
-    // Content используется для укзания содержимого ответа
+
     @ApiResponses(@ApiResponse(responseCode = "200", content =
-            // Указываем тип содержимого ответа
     @Content(schema = @Schema(implementation = User.class))
     ))
     @GetMapping

@@ -68,8 +68,8 @@ public class UserControllerIT {
         utils.regDefaultUser();
         final User expectedUser = userRepository.findAll().get(0);
         final var response = utils.perform(
-                        get(USER_CONTROLLER_PATH + ID, expectedUser.getId()),
-                        expectedUser.getEmail()
+                get(USER_CONTROLLER_PATH + ID, expectedUser.getId()),
+                expectedUser.getEmail()
                 ).andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -155,6 +155,23 @@ public class UserControllerIT {
         assertTrue(userRepository.existsById(userId));
         assertNull(userRepository.findByEmail(TEST_USERNAME).orElse(null));
         assertNotNull(userRepository.findByEmail(TEST_USERNAME_2).orElse(null));
+    }
+
+    @Test
+    public void changeEmailButTokenWillBeSame() throws Exception {
+        utils.regDefaultUser();
+
+        final var user = userRepository.findByEmail(TEST_USERNAME).get();
+
+        final String token = utils.buildToken(user.getId());
+
+        final var userDto = new UserDto(TEST_USERNAME_2, user.getFirstName(), user.getLastName(), "pwd");
+        final var updateRequest = put(USER_CONTROLLER_PATH + ID, user.getId())
+                .content(asJson(userDto))
+                .contentType(APPLICATION_JSON);
+
+        utils.performWithToken(updateRequest, token).andExpect(status().isOk());
+        utils.performWithToken(updateRequest, token).andExpect(status().isOk());
     }
 
     @Test

@@ -2,7 +2,7 @@ base-url: ""
 
 spring:
   application:
-    name: taskManager
+    name: taskManagerTest
 
   jpa:
     show-sql: true

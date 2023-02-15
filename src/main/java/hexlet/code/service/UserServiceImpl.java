@@ -44,13 +44,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public String getCurrentUserName() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+    public Long getCurrentUserId() {
+        return Long.valueOf(SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
     @Override
     public User getCurrentUser() {
-        return userRepository.findByEmail(getCurrentUserName()).get();
+        return userRepository.findById(getCurrentUserId()).get();
     }
 
     @Override
@@ -62,7 +62,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     private UserDetails buildSpringUser(final User user) {
         return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
+                user.getId().toString(),
                 user.getPassword(),
                 DEFAULT_AUTHORITIES
         );
