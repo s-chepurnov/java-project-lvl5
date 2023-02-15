@@ -1,3 +1,4 @@
+rollbar_token: ${ROLLBARTOKEN}
 server:
   error:
     include-stacktrace: never

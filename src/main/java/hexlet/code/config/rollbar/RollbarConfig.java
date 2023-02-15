@@ -8,6 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.beans.factory.annotation.Value;
 
+//set env var on prod
 //5bd80aea97864264a0a8dc041206f5d8
 @Configuration
 @ComponentScan({"hexlet.code"})
