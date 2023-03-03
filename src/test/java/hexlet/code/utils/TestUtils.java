@@ -6,9 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.component.JWTHelper;
 import hexlet.code.dto.UserDto;
 import hexlet.code.model.User;
-import hexlet.code.repository.LabelRepository;
-import hexlet.code.repository.TaskRepository;
-import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,19 +46,7 @@ public class TestUtils {
     @Autowired
     private JWTHelper jwtHelper;
 
-    @Autowired
-    private TaskStatusRepository taskStatusRepository;
-
-    @Autowired
-    private TaskRepository taskRepository;
-
-    @Autowired
-    private LabelRepository labelRepository;
-
     public void tearDown() {
-        taskRepository.deleteAll();
-        labelRepository.deleteAll();
-        taskStatusRepository.deleteAll();
         userRepository.deleteAll();
     }
 

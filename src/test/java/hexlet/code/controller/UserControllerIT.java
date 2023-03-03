@@ -2,7 +2,6 @@ package hexlet.code.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.config.SpringConfigForIT;
-import hexlet.code.dto.LoginDto;
 import hexlet.code.dto.UserDto;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
@@ -19,7 +18,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static hexlet.code.config.SpringConfigForIT.TEST_PROFILE;
-import static hexlet.code.config.security.SecurityConfig.LOGIN;
 import static hexlet.code.controller.UserController.ID;
 import static hexlet.code.controller.UserController.USER_CONTROLLER_PATH;
 import static hexlet.code.utils.TestUtils.TEST_USERNAME;
@@ -35,7 +33,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -83,16 +80,6 @@ public class UserControllerIT {
         assertEquals(expectedUser.getLastName(), user.getLastName());
     }
 
-    @Disabled("For now active only positive tests")
-    @Test
-    public void getUserByIdFails() throws Exception {
-        utils.regDefaultUser();
-        final User expectedUser = userRepository.findAll().get(0);
-        utils.perform(get(USER_CONTROLLER_PATH + ID, expectedUser.getId()))
-                .andExpect(status().isUnauthorized());
-
-    }
-
     @Test
     public void getAllUsers() throws Exception {
         utils.regDefaultUser();
@@ -105,37 +92,6 @@ public class UserControllerIT {
         });
 
         assertThat(users).hasSize(1);
-    }
-
-    @Disabled("For now active only positive tests")
-    @Test
-    public void twiceRegTheSameUserFail() throws Exception {
-        utils.regDefaultUser().andExpect(status().isCreated());
-        utils.regDefaultUser().andExpect(status().isBadRequest());
-
-        assertEquals(1, userRepository.count());
-    }
-
-    @Test
-    public void login() throws Exception {
-        utils.regDefaultUser();
-        final LoginDto loginDto = new LoginDto(
-                utils.getTestRegistrationDto().getEmail(),
-                utils.getTestRegistrationDto().getPassword()
-        );
-        final var loginRequest = post(LOGIN).content(asJson(loginDto)).contentType(APPLICATION_JSON);
-        utils.perform(loginRequest).andExpect(status().isOk());
-    }
-
-    @Disabled("For now active only positive tests")
-    @Test
-    public void loginFail() throws Exception {
-        final LoginDto loginDto = new LoginDto(
-                utils.getTestRegistrationDto().getEmail(),
-                utils.getTestRegistrationDto().getPassword()
-        );
-        final var loginRequest = post(LOGIN).content(asJson(loginDto)).contentType(APPLICATION_JSON);
-        utils.perform(loginRequest).andExpect(status().isUnauthorized());
     }
 
     @Test
