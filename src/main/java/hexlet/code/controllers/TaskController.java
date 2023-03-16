@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,13 +35,11 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RestController
 @RequestMapping("/api/tasks")
 @SecurityRequirement(name = "javainuseapi")
+@AllArgsConstructor
 public class TaskController {
 
-    @Autowired
-    private TaskService taskService;
-
-    @Autowired
-    private TaskRepository taskRepository;
+    private final TaskService taskService;
+    private final TaskRepository taskRepository;
 
     public static final String ID = "/{id}";
     private static final String ONLY_AUTHOR_BY_ID = """

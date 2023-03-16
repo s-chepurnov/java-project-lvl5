@@ -3,16 +3,16 @@ package hexlet.code.services;
 import hexlet.code.dtos.LabelDto;
 import hexlet.code.model.Label;
 import hexlet.code.repositories.LabelRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class LabelService {
 
-    @Autowired
-    private LabelRepository labelRepository;
+    private final LabelRepository labelRepository;
 
     public List<Label> findAll() {
         return labelRepository.findAll();
