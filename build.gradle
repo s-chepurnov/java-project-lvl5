@@ -41,7 +41,7 @@ dependencies {
 	implementation 'com.querydsl:querydsl-core:5.0.0'
 	implementation 'com.querydsl:querydsl-jpa:5.0.0'
 	implementation 'org.springdoc:springdoc-openapi-ui:1.5.12'
-	implementation 'org.liquibase:liquibase-core:4.15.0'
+	implementation 'org.liquibase:liquibase-core:4.6.1'
 	implementation 'com.rollbar:rollbar-spring-boot-webmvc:1.+'
 
 	liquibaseRuntime(
