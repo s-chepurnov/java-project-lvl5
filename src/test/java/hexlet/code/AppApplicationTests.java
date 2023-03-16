@@ -1,12 +1,13 @@
 package hexlet.code;
 
 import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AppApplicationTests {
 
     @Test
-    void init() {
+    void testInit() {
         assertThat(true).isTrue();
     }
 

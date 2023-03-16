@@ -1,35 +1,36 @@
 package hexlet.code.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.config.SpringConfigForIT;
-import hexlet.code.dto.LabelDto;
+import hexlet.code.dtos.LabelDto;
 import hexlet.code.model.Label;
-import hexlet.code.repository.LabelRepository;
-import hexlet.code.utils.TestUtils;
-import java.util.List;
-import org.assertj.core.api.Assertions;
+import hexlet.code.repositories.LabelRepository;
+import hexlet.code.repositories.UserRepository;
+import hexlet.code.utils.AuthorizationUtils;
+import hexlet.code.utils.UserUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import java.util.List;
+
 import static hexlet.code.config.SpringConfigForIT.TEST_PROFILE;
-import static hexlet.code.controller.LabelController.ID;
-import static hexlet.code.controller.LabelController.LABEL_CONTROLLER_PATH;
-import static hexlet.code.utils.TestUtils.TEST_USERNAME;
-import static hexlet.code.utils.TestUtils.asJson;
-import static hexlet.code.utils.TestUtils.fromJson;
-import static org.assertj.core.api.Assertions.assertThat;
+import static hexlet.code.controller.UserControllerIT.DEFAULT_USER_EMAIL;
+import static hexlet.code.utils.JsonUtils.asJson;
+import static hexlet.code.utils.JsonUtils.fromJson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -45,152 +46,151 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class LabelControllerIT {
 
     @Autowired
-    private TestUtils utils;
+    private AuthorizationUtils authUtils;
+
+    @Autowired
+    private UserUtils userUtils;
 
     @Autowired
     private LabelRepository labelRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private MockMvc mockMvc;
+
     @BeforeEach
     public void before() throws Exception {
-        utils.regDefaultUser();
+        userUtils.addDefaultUser();
     }
 
     @AfterEach
     public void tearDown() {
-        utils.tearDown();
+        labelRepository.deleteAll();
+        userRepository.deleteAll();
+    }
+
+    private static final String LABEL_CONTROLLER_PATH =  "/api/labels";
+
+    private static final String LABEL_CONTROLLER_PATH_ID =  "/api/labels/{id}";
+
+    public static final String DEFAULT_LABEL_NAME = "Bug";
+
+    @Test
+    public void createLabel() throws Exception {
+
+        assertEquals(0, labelRepository.count());
+
+        addDefaultLabel();
+
+        assertEquals(1, labelRepository.count());
     }
 
     @Test
-    public void getAll() throws Exception {
-        final var response = utils.perform(get(LABEL_CONTROLLER_PATH), TEST_USERNAME)
+    public void getLabelById() throws Exception {
+
+        final Label defaultLabel = addDefaultLabel();
+        final Long defaultLabelId = defaultLabel.getId();
+
+        final MockHttpServletRequestBuilder request = authUtils.getAuthRequest(
+                get(LABEL_CONTROLLER_PATH_ID, defaultLabelId),
+                DEFAULT_USER_EMAIL
+        );
+
+        final MockHttpServletResponse response = mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
 
-        final List<Label> labels = fromJson(response.getContentAsString(), new TypeReference<>() {
-        });
-        final List<Label> expected = labelRepository.findAll();
-        Assertions.assertThat(labels)
-                .containsAll(expected);
+        final Label label = fromJson(response.getContentAsString(), new TypeReference<>() { });
+
+        assertEquals(defaultLabel.getId(), label.getId());
+        assertEquals(defaultLabel.getName(), label.getName());
     }
 
     @Test
-    public void createNewLabel() throws Exception {
-        final LabelDto labelToSave = new LabelDto("test label");
+    public void getAllLabels() throws Exception {
+        addDefaultLabel();
 
-        final var request = buildRequestForSave(labelToSave);
-
-        final var response = utils.perform(request, TEST_USERNAME)
-                .andExpect(status().isCreated())
+        final MockHttpServletResponse response = mockMvc.perform(get(LABEL_CONTROLLER_PATH))
+                .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
 
-        final Label savedLabel = fromJson(response.getContentAsString(), new TypeReference<>() {
-        });
+        final List<Label> labels = fromJson(response.getContentAsString(), new TypeReference<>() { });
 
-        assertThat(labelRepository.getById(savedLabel.getId())).isNotNull();
-    }
-
-    @Disabled("For now active only positive tests")
-    @Test
-    public void createNewValidationFail() throws Exception {
-        final LabelDto labelToSave = new LabelDto();
-
-        final var request = buildRequestForSave(labelToSave);
-
-        utils.perform(request, TEST_USERNAME)
-                .andExpect(status().isUnprocessableEntity());
-    }
-
-    @Disabled("For now active only positive tests")
-    @Test
-    public void failToTwiceCreateSameLabel() throws Exception {
-        final LabelDto labelToSave = new LabelDto("test label");
-
-        final var request = buildRequestForSave(labelToSave);
-
-        utils.perform(request, TEST_USERNAME)
-                .andExpect(status().isCreated());
-        utils.perform(request, TEST_USERNAME)
-                .andExpect(status().isBadRequest());
+        assertNotNull(labels);
+        assertEquals(labels.size(), 1);
     }
 
     @Test
     public void updateLabel() throws Exception {
-        final LabelDto label = new LabelDto("test label");
+        final Label defaultLabel = addDefaultLabel();
+        final Long defaultLabelId = defaultLabel.getId();
 
-        final var requestToSave = buildRequestForSave(label);
+        final String newLabelName = "Feature";
+        final LabelDto labelDto = new LabelDto(newLabelName);
 
-        final var response = utils.perform(requestToSave, TEST_USERNAME)
-                .andExpect(status().isCreated())
+        final MockHttpServletRequestBuilder updateRequest = authUtils.getAuthRequest(
+                put(LABEL_CONTROLLER_PATH_ID, defaultLabelId)
+                        .content(asJson(labelDto))
+                        .contentType(APPLICATION_JSON),
+                DEFAULT_USER_EMAIL
+        );
+
+        final MockHttpServletResponse response = mockMvc.perform(updateRequest)
+                .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
 
-        final long id = fromJson(response.getContentAsString(), new TypeReference<Label>() {
-        }).getId();
+        assertTrue(labelRepository.existsById(defaultLabelId));
+        assertNull(labelRepository.findByName(DEFAULT_LABEL_NAME).orElse(null));
+        assertNotNull(labelRepository.findByName(newLabelName).orElse(null));
 
-        label.setName("new name");
-        final var requestToUpdate = put(LABEL_CONTROLLER_PATH + ID, id)
-                .content(asJson(label))
-                .contentType(APPLICATION_JSON);
+        final Label label = fromJson(response.getContentAsString(), new TypeReference<>() { });
 
-        utils.perform(requestToUpdate, TEST_USERNAME)
-                .andExpect(status().isOk());
-
-        final Label updatedLabel = labelRepository.findById(id)
-                .get();
-
-        assertEquals(label.getName(), updatedLabel.getName());
-    }
-
-    @Disabled("For now active only positive tests")
-    @Test
-    public void updateLabelFails() throws Exception {
-        final LabelDto label = new LabelDto("test label");
-
-        final var requestToSave = buildRequestForSave(label);
-
-        final var response = utils.perform(requestToSave, TEST_USERNAME)
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse();
-
-        final long id = fromJson(response.getContentAsString(), new TypeReference<Label>() {
-        }).getId();
-
-        label.setName("");
-        final var requestToUpdate = put(LABEL_CONTROLLER_PATH + ID, id)
-                .content(asJson(label))
-                .contentType(APPLICATION_JSON);
-
-        utils.perform(requestToUpdate, TEST_USERNAME)
-                .andExpect(status().isUnprocessableEntity());
+        assertNotNull(label);
+        assertEquals(defaultLabelId, label.getId());
+        assertEquals(newLabelName, label.getName());
     }
 
     @Test
     public void deleteLabel() throws Exception {
-        final LabelDto label = new LabelDto("test label");
+        final Label label = addDefaultLabel();
 
-        final var requestToSave = buildRequestForSave(label);
+        final MockHttpServletRequestBuilder deleteRequest = authUtils.getAuthRequest(
+                delete(LABEL_CONTROLLER_PATH_ID, label.getId()),
+                DEFAULT_USER_EMAIL
+        );
 
-        final var response = utils.perform(requestToSave, TEST_USERNAME)
+        mockMvc.perform(deleteRequest).andExpect(status().isOk());
+
+        assertEquals(0, labelRepository.count());
+    }
+
+    private Label addDefaultLabel() throws Exception {
+        return addLabel(DEFAULT_LABEL_NAME);
+    }
+
+    private Label addLabel(String labelName) throws Exception {
+        final LabelDto labelDto = new LabelDto(labelName);
+
+        final MockHttpServletRequestBuilder request = authUtils.getAuthRequest(
+                post(LABEL_CONTROLLER_PATH)
+                        .content(asJson(labelDto))
+                        .contentType(APPLICATION_JSON),
+                DEFAULT_USER_EMAIL
+        );
+
+        final MockHttpServletResponse response = mockMvc.perform(request)
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse();
 
-        final long id = fromJson(response.getContentAsString(), new TypeReference<Label>() {
-        }).getId();
-
-        utils.perform(delete(LABEL_CONTROLLER_PATH + ID, id), TEST_USERNAME)
-                .andExpect(status().isOk());
-
-        assertFalse(labelRepository.existsById(id));
+        final Label label = fromJson(response.getContentAsString(), new TypeReference<>() { });
+        return label;
     }
-
-    private MockHttpServletRequestBuilder buildRequestForSave(final LabelDto label) throws JsonProcessingException {
-        return post(LABEL_CONTROLLER_PATH)
-                .content(asJson(label))
-                .contentType(APPLICATION_JSON);
-    }
-
 }
+
+

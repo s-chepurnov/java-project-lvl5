@@ -1,26 +1,19 @@
-# Task Manager
+# java-project-73
 
-### Tests
-[![Actions Status](https://github.com/s-chepurnov/java-project-lvl5/workflows/hexlet-check/badge.svg)](https://github.com/s-chepurnov/java-project-lvl5/actions)
-[![Maintainability](https://api.codeclimate.com/v1/badges/0ea524721f7478c76746/maintainability)](https://codeclimate.com/github/s-chepurnov/java-project-lvl5/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/0ea524721f7478c76746/test_coverage)](https://codeclimate.com/github/s-chepurnov/java-project-lvl5/test_coverage)
+### Hexlet tests and linter status:
+[![Hexlet-check](https://github.com/pythagoreantree/java-project-73/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/pythagoreantree/java-project-73/actions/workflows/hexlet-check.yml)
+[![Java CI](https://github.com/pythagoreantree/java-project-73/actions/workflows/java-ci.yml/badge.svg)](https://github.com/pythagoreantree/java-project-73/actions/workflows/java-ci.yml)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/c55f1e8000665445f59d/test_coverage)](https://codeclimate.com/github/pythagoreantree/java-project-73/test_coverage)
 
-## System requirements
-* Java > 17
-* GNU Make
+This is a Spring Boot MVC project to manage tasks assigned to users.
 
-### Technologies in use
-* Spring Boot 2, Spring Security, Spring Data JPA 
-* Liquibase, PostgreSQL, H2
-* Open API (Swagger)
-* Github Actions, Checkstyle
-* Rollbar
+Project Link: https://project-task-manager.onrender.com
 
-### Run locally
-```sh
-make generate-migrations
+---
+
+To start project locally
+```bash
 make start
 ```
+---
 
-### App link
-https://hexlet-task-manager-service.onrender.com/

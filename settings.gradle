@@ -1,1 +1,11 @@
+plugins {
+    id 'com.gradle.enterprise' version '3.12.3'
+}
 rootProject.name = 'app'
+
+gradleEnterprise {
+    buildScan {
+        termsOfServiceUrl = "https://gradle.com/terms-of-service"
+        termsOfServiceAgree = "no"
+    }
+}

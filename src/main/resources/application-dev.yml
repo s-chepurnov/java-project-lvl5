@@ -1,0 +1,28 @@
+server:
+  error:
+    include-stacktrace: on_param
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+spring:
+  datasource:
+    driverClassName: org.h2.Driver
+    username: ""
+    password: ""
+    url: "jdbc:h2:file:./testdb"
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+
+  h2:
+    console:
+      enabled: true
+
+logging:
+  level:
+    root: INFO
+    web: DEBUG

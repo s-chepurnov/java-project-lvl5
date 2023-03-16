@@ -1,0 +1,22 @@
+server:
+  port: ${PORT:5040}
+
+base-url: /api
+
+jwt:
+  token:
+    secret: ${SECRET:38782F413F4428472B4B6250655368566D597133743676397924422645294840}
+
+rollbar:
+  token: ${ROLLBAR_TOKEN:8ec32dc169a047a184fcb12010ed3afa}
+
+spring:
+  application:
+    name: taskManager
+
+  profiles:
+    active: ${APP_ENV:dev}
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/changelog-master.xml

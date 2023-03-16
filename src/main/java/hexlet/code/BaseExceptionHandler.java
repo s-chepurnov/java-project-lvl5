@@ -1,44 +1,29 @@
 package hexlet.code;
 
-import java.util.List;
-import java.util.NoSuchElementException;
+import hexlet.code.dtos.exceptions.ResponseError;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import java.util.List;
+
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
-@ResponseBody
-@ControllerAdvice
+@RestControllerAdvice
 public class BaseExceptionHandler {
 
     @ResponseStatus(INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public String generalExceptionHandler(Exception exception) {
-        return exception.getMessage();
-    }
-
-    @ResponseStatus(NOT_FOUND)
-    @ExceptionHandler(NoSuchElementException.class)
-    public String noSuchElementExceptionHandler(NoSuchElementException exception) {
-        return exception.getMessage();
-    }
-
-    @ResponseStatus(BAD_REQUEST)
-    @ExceptionHandler({HttpMessageNotReadableException.class})
-    public String validationExceptionsHandler(Exception exception) {
         return exception.getMessage();
     }
 
@@ -56,15 +41,30 @@ public class BaseExceptionHandler {
                 .getMessage();
     }
 
-    @ResponseStatus(FORBIDDEN)
-    @ExceptionHandler(AccessDeniedException.class)
-    public String accessDeniedException(AccessDeniedException exception) {
-        return exception.getMessage();
+    @ResponseStatus(UNAUTHORIZED)
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseError badCredentialsException(BadCredentialsException ex) {
+        return new ResponseError(
+                getStatus(UNAUTHORIZED),
+                ex.getMessage()
+        );
     }
 
-    @ResponseStatus(UNAUTHORIZED)
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public String userNitFoundExceptionHandler(UsernameNotFoundException exception) {
-        return exception.getMessage();
+    @ResponseStatus(FORBIDDEN)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseError accessDeniedException(AccessDeniedException ex) {
+        return new ResponseError(
+                getStatus(FORBIDDEN),
+                ex.getMessage()
+        );
     }
+
+    private String getStatus(HttpStatus httpStatus) {
+        StringBuilder sb = new StringBuilder();
+        return sb.append(httpStatus.value())
+                .append(" ")
+                .append(httpStatus.getReasonPhrase())
+                .toString();
+    }
+
 }

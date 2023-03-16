@@ -1,35 +1,36 @@
 package hexlet.code.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.config.SpringConfigForIT;
-import hexlet.code.dto.TaskStatusDto;
+import hexlet.code.dtos.TaskStatusDto;
 import hexlet.code.model.TaskStatus;
-import hexlet.code.repository.TaskStatusRepository;
-import hexlet.code.utils.TestUtils;
-import java.util.List;
-import org.assertj.core.api.Assertions;
+import hexlet.code.repositories.TaskStatusRepository;
+import hexlet.code.repositories.UserRepository;
+import hexlet.code.utils.AuthorizationUtils;
+import hexlet.code.utils.UserUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import java.util.List;
+
 import static hexlet.code.config.SpringConfigForIT.TEST_PROFILE;
-import static hexlet.code.controller.TaskStatusController.ID;
-import static hexlet.code.controller.TaskStatusController.TASK_STATUS_CONTROLLER_PATH;
-import static hexlet.code.utils.TestUtils.TEST_USERNAME;
-import static hexlet.code.utils.TestUtils.asJson;
-import static hexlet.code.utils.TestUtils.fromJson;
-import static org.assertj.core.api.Assertions.assertThat;
+import static hexlet.code.controller.UserControllerIT.DEFAULT_USER_EMAIL;
+import static hexlet.code.utils.JsonUtils.asJson;
+import static hexlet.code.utils.JsonUtils.fromJson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -45,154 +46,151 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class TaskStatusControllerIT {
 
     @Autowired
-    private TestUtils utils;
+    private AuthorizationUtils authUtils;
+
+    @Autowired
+    private UserUtils userUtils;
 
     @Autowired
     private TaskStatusRepository taskStatusRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private MockMvc mockMvc;
+
     @BeforeEach
     public void before() throws Exception {
-        utils.regDefaultUser();
+        userUtils.addDefaultUser();
     }
 
     @AfterEach
     public void tearDown() {
-        utils.tearDown();
+        taskStatusRepository.deleteAll();
+        userRepository.deleteAll();
+    }
+
+    private static final String TASK_STATUS_CONTROLLER_PATH =  "/api/statuses";
+
+    private static final String TASK_STATUS_CONTROLLER_PATH_ID =  "/api/statuses/{id}";
+
+    public static final String DEFAULT_TASK_STATUS_NAME = "New";
+
+
+    @Test
+    public void createNewStatus() throws Exception {
+
+        assertEquals(0, taskStatusRepository.count());
+
+        addDefaultTaskStatus();
+
+        assertEquals(1, taskStatusRepository.count());
     }
 
     @Test
-    public void getAll() throws Exception {
-        final var response = utils.perform(get(TASK_STATUS_CONTROLLER_PATH), TEST_USERNAME)
+    public void getStatusById() throws Exception {
+
+        final TaskStatus defaultTaskStatus = addDefaultTaskStatus();
+        final Long defaultTaskStatusId = defaultTaskStatus.getId();
+
+        final MockHttpServletRequestBuilder request = authUtils.getAuthRequest(
+                get(TASK_STATUS_CONTROLLER_PATH_ID, defaultTaskStatusId),
+                DEFAULT_USER_EMAIL
+        );
+
+        final MockHttpServletResponse response = mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
 
-        final List<TaskStatus> taskStatuses = fromJson(response.getContentAsString(), new TypeReference<>() {
-        });
-        final List<TaskStatus> expected = taskStatusRepository.findAll();
-        Assertions.assertThat(taskStatuses)
-                .containsAll(expected);
+        final TaskStatus taskStatus = fromJson(response.getContentAsString(), new TypeReference<>() { });
+
+        assertEquals(defaultTaskStatus.getId(), taskStatus.getId());
+        assertEquals(defaultTaskStatus.getName(), taskStatus.getName());
     }
 
     @Test
-    public void createNewStatus() throws Exception {
-        final TaskStatusDto statusToSave = new TaskStatusDto("test status");
+    public void getAllStatuses() throws Exception {
+        addDefaultTaskStatus();
 
-        final var request = buildRequestForSave(statusToSave);
+        final MockHttpServletResponse response = mockMvc.perform(get(TASK_STATUS_CONTROLLER_PATH))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
 
-        final var response = utils.perform(request, TEST_USERNAME)
+        final List<TaskStatus> taskStatuses = fromJson(response.getContentAsString(), new TypeReference<>() { });
+
+        assertNotNull(taskStatuses);
+        assertEquals(taskStatuses.size(), 1);
+    }
+
+    @Test
+    public void updateTaskStatus() throws Exception {
+        final TaskStatus defaultTaskStatus = addDefaultTaskStatus();
+        final Long defaultTaskStatusId = defaultTaskStatus.getId();
+
+        final String newTaskStatusName = "In progress";
+        final TaskStatusDto taskStatusDto = new TaskStatusDto(newTaskStatusName);
+
+        final MockHttpServletRequestBuilder updateRequest = authUtils.getAuthRequest(
+                put(TASK_STATUS_CONTROLLER_PATH_ID, defaultTaskStatusId)
+                        .content(asJson(taskStatusDto))
+                        .contentType(APPLICATION_JSON),
+                DEFAULT_USER_EMAIL
+        );
+
+        final MockHttpServletResponse response = mockMvc.perform(updateRequest)
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+
+        assertTrue(taskStatusRepository.existsById(defaultTaskStatusId));
+        assertNull(taskStatusRepository.findByName(DEFAULT_TASK_STATUS_NAME).orElse(null));
+        assertNotNull(taskStatusRepository.findByName(newTaskStatusName).orElse(null));
+
+        final TaskStatus taskStatus = fromJson(response.getContentAsString(), new TypeReference<>() { });
+
+        assertNotNull(taskStatus);
+        assertEquals(defaultTaskStatusId, taskStatus.getId());
+        assertEquals(newTaskStatusName, taskStatus.getName());
+    }
+
+    @Test
+    public void deleteTaskStatus() throws Exception {
+        final TaskStatus defaultTaskStatus = addDefaultTaskStatus();
+
+        final MockHttpServletRequestBuilder deleteRequest = authUtils.getAuthRequest(
+                delete(TASK_STATUS_CONTROLLER_PATH_ID, defaultTaskStatus.getId()),
+                DEFAULT_USER_EMAIL
+        );
+
+        mockMvc.perform(deleteRequest).andExpect(status().isOk());
+
+        assertEquals(0, taskStatusRepository.count());
+    }
+
+    private TaskStatus addDefaultTaskStatus() throws Exception {
+        return addTaskStatus(DEFAULT_TASK_STATUS_NAME);
+    }
+
+    private TaskStatus addTaskStatus(String statusName) throws Exception {
+
+        final TaskStatusDto taskStatusDto = new TaskStatusDto(statusName);
+
+        final MockHttpServletRequestBuilder request = authUtils.getAuthRequest(
+                post(TASK_STATUS_CONTROLLER_PATH)
+                        .content(asJson(taskStatusDto))
+                        .contentType(APPLICATION_JSON),
+                DEFAULT_USER_EMAIL
+        );
+
+        final MockHttpServletResponse response = mockMvc.perform(request)
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse();
 
-        final TaskStatus savedTaskStatus = fromJson(response.getContentAsString(), new TypeReference<>() {
-        });
-
-        assertThat(taskStatusRepository.getById(savedTaskStatus.getId())).isNotNull();
+        final TaskStatus taskStatus = fromJson(response.getContentAsString(), new TypeReference<>() { });
+        return taskStatus;
     }
-
-    @Disabled("For now active only positive tests")
-    @Test
-    public void createNewValidationFail() throws Exception {
-        final TaskStatusDto statusToSave = new TaskStatusDto();
-
-        final var request = buildRequestForSave(statusToSave);
-
-        utils.perform(request, TEST_USERNAME)
-                .andExpect(status().isUnprocessableEntity());
-    }
-
-    @Disabled("For now active only positive tests")
-    @Test
-    public void failToTwiceCreateSameStatus() throws Exception {
-        final TaskStatusDto statusToSave = new TaskStatusDto("test status");
-
-        final var request = buildRequestForSave(statusToSave);
-
-        utils.perform(request, TEST_USERNAME)
-                .andExpect(status().isCreated());
-        utils.perform(request, TEST_USERNAME)
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void updateStatus() throws Exception {
-        final TaskStatusDto status = new TaskStatusDto("test status");
-
-        final var requestToSave = buildRequestForSave(status);
-
-        final var response = utils.perform(requestToSave, TEST_USERNAME)
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse();
-
-        final long id = fromJson(response.getContentAsString(), new TypeReference<TaskStatus>() {
-        }).getId();
-
-        status.setName("new name");
-        final var requestToUpdate = put(TASK_STATUS_CONTROLLER_PATH + ID, id)
-                .content(asJson(status))
-                .contentType(APPLICATION_JSON);
-
-        utils.perform(requestToUpdate, TEST_USERNAME)
-                .andExpect(status().isOk());
-
-        final TaskStatus updatedTaskStatus = taskStatusRepository.findById(id)
-                .get();
-
-        assertEquals(status.getName(), updatedTaskStatus.getName());
-    }
-
-    @Disabled("For now active only positive tests")
-    @Test
-    public void updateStatusFails() throws Exception {
-        final TaskStatusDto status = new TaskStatusDto("test status");
-
-        final var requestToSave = buildRequestForSave(status);
-
-        final var response = utils.perform(requestToSave, TEST_USERNAME)
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse();
-
-        final long id = fromJson(response.getContentAsString(), new TypeReference<TaskStatus>() {
-        }).getId();
-
-        status.setName("");
-        final var requestToUpdate = put(TASK_STATUS_CONTROLLER_PATH + ID, id)
-                .content(asJson(status))
-                .contentType(APPLICATION_JSON);
-
-        utils.perform(requestToUpdate, TEST_USERNAME)
-                .andExpect(status().isUnprocessableEntity());
-    }
-
-    @Test
-    public void deleteStatus() throws Exception {
-        final TaskStatusDto status = new TaskStatusDto("test status");
-
-        final var requestToSave = buildRequestForSave(status);
-
-        final var response = utils.perform(requestToSave, TEST_USERNAME)
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse();
-
-        final long id = fromJson(response.getContentAsString(), new TypeReference<TaskStatus>() {
-        }).getId();
-
-        utils.perform(delete(TASK_STATUS_CONTROLLER_PATH + ID, id), TEST_USERNAME)
-                .andExpect(status().isOk());
-
-        assertFalse(taskStatusRepository.existsById(id));
-    }
-
-    private MockHttpServletRequestBuilder buildRequestForSave(
-            final TaskStatusDto status
-    ) throws JsonProcessingException {
-        return post(TASK_STATUS_CONTROLLER_PATH)
-                .content(asJson(status))
-                .contentType(APPLICATION_JSON);
-    }
-
 }
