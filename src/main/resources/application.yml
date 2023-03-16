@@ -14,9 +14,11 @@ spring:
   application:
     name: taskManager
 
-  profiles:
-    active: ${APP_ENV:dev}
-
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/changelog-master.xml
+
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
